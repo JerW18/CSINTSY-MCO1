@@ -2,27 +2,26 @@ import copy
 import math
 
 """
-Changes by Erika Feb 25: 
-    - added Path List to Node Class
-    - changed calculate_function operation from * to +
-    - removed distance variable (bcs cost is counted from degree variable)
-    - removed new_moves list (created path instead to track prev)
-    - corrected adjacent moves
+Changes by Jeremy Feb 25:
+    - fixed final path bug (where code won't terminate)
 """
 directions = [[0,1],[1,0],[0,-1],[-1,0]]
 class Node(object):
-    def __init__(self, parent=None, moves=None, path=[]):
+    def __init__(self, parent=None, moves=None, path=None):
         self.parent = parent
         self.moves = moves
-        self.path = path
-        
 
+        if path is None:
+            self.path = list()
+        else:
+            self.path = path
+    
         self.function = 0
         self.degree = 0
         self.heuristic = 0
     
     def calculate_function(self):
-        return self.degree + self.heuristic
+        return self.degree * self.heuristic
 
 def is_wall(maze, x, y):
     if(maze[x][y] == "#"):
@@ -53,7 +52,7 @@ def find_end(maze_size, maze):
     for x in range(maze_size):
         for y in range(maze_size):
             if(maze[x][y] == 'G'):
-                return x, y
+                return [x, y]
 
 def manhattan_distance(current_position, end_position):
     x = end_position[0] - current_position[0]
@@ -67,18 +66,18 @@ def possible_moves(node, maze_size, maze):
     current_position = node.moves
     end_position = find_end(maze_size, maze)
     #print(current_position)
-   
-    for direction in range(len(directions)):
+
+    for direction in directions:
         #gives adjacent moves
-        new_x = current_position[0] + directions[direction][0]
-        new_y = current_position[1] + directions[direction][1]
+        new_x = current_position[0] + direction[0]
+        new_y = current_position[1] + direction[1]
         
         #checks if adjacent move is valid. (not wall, not out of maze, and not explored)
         if check_bounds(new_x, new_y, maze_size) and not is_wall(maze, new_x, new_y) and [new_x, new_y] not in node.path:
             
-            #print(new_x,new_y)
+            #print(new_x,new_y) #tracing
             new_node = Node(node, [new_x, new_y])
-            new_node.path = node.path + [current_position] + [[new_x, new_y, "*"]]
+            new_node.path = node.path + [current_position]
             new_node.degree = node.degree + 1
             new_node.heuristic = manhattan_distance([new_x, new_y], end_position)
 
@@ -106,7 +105,7 @@ def a_star(maze_size, maze):
         frontier.remove(current_node)
         explored.insert(0, current_node)
 
-        if current_node.moves[-1] == end_position:
+        if current_node.moves == end_position:
             return current_node
 
         possible_nodes = possible_moves(current_node, maze_size, maze)
@@ -124,14 +123,14 @@ def a_star(maze_size, maze):
 
                 frontier.insert(insertion_index, possible_node)
         #print(explored[0].moves)   #checker only
-                  
+
 maze = []
 
 #change the path:
-with open(r"/Users/erikac/Documents/GitHub/CSINTSY-MCO1/maze.txt") as maze_file:
+with open(r"D:\Codes\Codes_Python\maze.txt") as maze_file:
 
     maze_size = [int(i) for i in next(maze_file).split()][0]
     for i in range(maze_size):
         maze.append(list(next(maze_file))[0:maze_size])
 
-    a_star(maze_size, maze)
+    last_node = a_star(maze_size, maze)
