@@ -2,8 +2,8 @@ import copy
 import math
 
 """
-Changes by Jeremy Feb 25:
-    - fixed final path bug (where code won't terminate)
+Changes by MJ Feb 25:
+    - [line 110] added goal coordinates to the final path
 """
 directions = [[0,1],[1,0],[0,-1],[-1,0]]
 class Node(object):
@@ -106,6 +106,8 @@ def a_star(maze_size, maze):
         explored.insert(0, current_node)
 
         if current_node.moves == end_position:
+            current_node.path += [current_node.moves]
+            # print(current_node.path) # path checker (optimal)
             return current_node
 
         possible_nodes = possible_moves(current_node, maze_size, maze)
@@ -123,11 +125,12 @@ def a_star(maze_size, maze):
 
                 frontier.insert(insertion_index, possible_node)
         #print(explored[0].moves)   #checker only
+        
 
 maze = []
 
 #change the path:
-with open(r"D:\Codes\Codes_Python\maze.txt") as maze_file:
+with open(r"D:/Program Thingz/INTSY/MCO1/maze.txt") as maze_file:
 
     maze_size = [int(i) for i in next(maze_file).split()][0]
     for i in range(maze_size):
