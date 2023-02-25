@@ -1,9 +1,11 @@
 import copy
 import math
+import os
+import sys
 
 """
-Changes by Jeremy Feb 25:
-    - fixed final path bug (where code won't terminate)
+Changes by Gleezell Feb 25:
+    - fixed path file of "maze.txt"
 """
 directions = [[0,1],[1,0],[0,-1],[-1,0]]
 class Node(object):
@@ -126,11 +128,11 @@ def a_star(maze_size, maze):
 
 maze = []
 
-#change the path:
-with open(r"D:\Codes\Codes_Python\maze.txt") as maze_file:
+with open(os.path.join(sys.path[0], "maze.txt"), "r") as maze_file:
 
     maze_size = [int(i) for i in next(maze_file).split()][0]
     for i in range(maze_size):
         maze.append(list(next(maze_file))[0:maze_size])
 
     last_node = a_star(maze_size, maze)
+
