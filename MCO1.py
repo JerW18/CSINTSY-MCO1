@@ -107,7 +107,7 @@ def a_star(maze_size, maze):
 
         if current_node.moves == end_position:
             current_node.path += [current_node.moves]
-            # print(current_node.path) # path checker (optimal)
+            # print(current_node.path) # path checker (MUST be optimal)
             return current_node
 
         possible_nodes = possible_moves(current_node, maze_size, maze)
