@@ -89,7 +89,6 @@ def possible_moves(node, maze_size, maze):
         
     return possible_nodes
 
-
 def a_star(maze_size, maze):
     end_position = find_end(maze_size, maze)
 
@@ -125,6 +124,14 @@ def a_star(maze_size, maze):
 
                 frontier.insert(insertion_index, possible_node)
         #print(explored[0].moves)   #checker only
+
+
+def get_maze_size():
+    return maze_size
+
+def get_maze():
+    return maze
+
 
 maze = []
 
