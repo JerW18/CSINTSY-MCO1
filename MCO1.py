@@ -16,7 +16,6 @@ Changes by MJ Feb 25:
     - [line 110] added goal coordinates to the final path
 Changes by Gleezell Feb 25:
     - fixed path file of "maze.txt"
-
 """
 directions = [[0,1],[1,0],[0,-1],[-1,0]]
 class Node(object):
@@ -99,6 +98,10 @@ def possible_moves(node, maze_size, maze):
         
     return possible_nodes
 
+def final_path(maze, node: Node):
+    for i in node.path:
+        maze[i[0]][i[1]] = "Z"
+
 def a_star(maze_size, maze):
     end_position = find_end(maze_size, maze)
 
@@ -117,8 +120,9 @@ def a_star(maze_size, maze):
 
         if current_node.moves == end_position:
             current_node.path += [current_node.moves]
+            final_path(maze, current_node)
             # print(current_node.path) # path checker (MUST be optimal)
-            return current_node
+            return "MAZE SOLVED!"
 
         possible_nodes = possible_moves(current_node, maze_size, maze)
         
@@ -134,6 +138,8 @@ def a_star(maze_size, maze):
 
                 frontier.insert(insertion_index, possible_node)
         #print(explored[0].moves)    #uncomment for explored path coordinates
+    if current_node.path[-1] != end_position:
+        return "MAZE UNSOLVABLE!"
 
 
 def get_maze_size():
@@ -151,13 +157,8 @@ with open(os.path.join(sys.path[0], "maze.txt"), "r") as maze_file:
     for i in range(maze_size):
         maze.append(list(next(maze_file))[0:maze_size])
 
-    last_node = a_star(maze_size, maze)
-    #print(last_node.path) #uncomment for final path coordinates
-    
-    #final path with "z'"
-    print(last_node.path)
-    for i in last_node.path:
-        maze[i[0]][i[1]] = "Z"
+    result = a_star(maze_size, maze)
+    print(result)
      
     """   
     uncomment for maze final path
@@ -165,4 +166,3 @@ with open(os.path.join(sys.path[0], "maze.txt"), "r") as maze_file:
         print(i)
     print()
     """
-
