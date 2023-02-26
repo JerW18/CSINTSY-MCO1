@@ -128,13 +128,12 @@ def a_star(maze_size, maze):
                 insertion_index = len(frontier)
                     
                 for index, node in enumerate(frontier):
-                    
                     if possible_node.function < node.function:
                         insertion_index = index
                         break
 
                 frontier.insert(insertion_index, possible_node)
-    
+        #print(explored[0].moves)    #uncomment for explored path coordinates
 
 
 def get_maze_size():
@@ -153,4 +152,17 @@ with open(os.path.join(sys.path[0], "maze.txt"), "r") as maze_file:
         maze.append(list(next(maze_file))[0:maze_size])
 
     last_node = a_star(maze_size, maze)
+    #print(last_node.path) #uncomment for final path coordinates
+    
+    #final path with "z'"
+    print(last_node.path)
+    for i in last_node.path:
+        maze[i[0]][i[1]] = "Z"
+     
+    """   
+    uncomment for maze final path
+    for i in maze:
+        print(i)
+    print()
+    """
 
