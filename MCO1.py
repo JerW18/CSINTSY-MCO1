@@ -1,9 +1,11 @@
 import copy
 import math
+import os
+import sys
 
 """
-Changes by Jeremy Feb 25:
-    - fixed final path bug (where code won't terminate)
+Changes by Gleezell Feb 25:
+    - fixed path file of "maze.txt"
 """
 directions = [[0,1],[1,0],[0,-1],[-1,0]]
 class Node(object):
@@ -87,7 +89,6 @@ def possible_moves(node, maze_size, maze):
         
     return possible_nodes
 
-
 def a_star(maze_size, maze):
     end_position = find_end(maze_size, maze)
 
@@ -124,13 +125,21 @@ def a_star(maze_size, maze):
                 frontier.insert(insertion_index, possible_node)
         #print(explored[0].moves)   #checker only
 
+
+def get_maze_size():
+    return maze_size
+
+def get_maze():
+    return maze
+
+
 maze = []
 
-#change the path:
-with open(r"D:\Codes\Codes_Python\maze.txt") as maze_file:
+with open(os.path.join(sys.path[0], "maze.txt"), "r") as maze_file:
 
     maze_size = [int(i) for i in next(maze_file).split()][0]
     for i in range(maze_size):
         maze.append(list(next(maze_file))[0:maze_size])
 
     last_node = a_star(maze_size, maze)
+
