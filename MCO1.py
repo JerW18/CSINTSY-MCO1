@@ -120,7 +120,7 @@ def a_star(maze_size, maze):
 
         if current_node.moves == end_position:
             current_node.path += [current_node.moves]
-            final_path(maze, current_node)
+            #final_path(maze, current_node)
             # print(current_node.path) # path checker (MUST be optimal)
             return "MAZE SOLVED!"
 
@@ -160,9 +160,8 @@ with open(os.path.join(sys.path[0], "maze.txt"), "r") as maze_file:
     result = a_star(maze_size, maze)
     print(result)
      
-    """   
-    uncomment for maze final path
+       
+    #uncomment for maze final path
     for i in maze:
         print(i)
     print()
-    """
