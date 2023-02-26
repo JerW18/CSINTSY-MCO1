@@ -1,9 +1,22 @@
 import copy
 import math
+import os
+import sys
 
 """
+Changes by Erika Feb 25
+    - added Path List to Node Class
+    - changed calculate_function operation from * to +
+    - removed distance variable (bcs cost is counted from degree variable)
+    - removed new_moves list (created path instead to track prev)
+    - corrected adjacent moves
 Changes by Jeremy Feb 25:
     - fixed final path bug (where code won't terminate)
+Changes by MJ Feb 25:
+    - [line 110] added goal coordinates to the final path
+Changes by Gleezell Feb 25:
+    - fixed path file of "maze.txt"
+
 """
 directions = [[0,1],[1,0],[0,-1],[-1,0]]
 class Node(object):
@@ -21,7 +34,7 @@ class Node(object):
         self.heuristic = 0
     
     def calculate_function(self):
-        return self.degree * self.heuristic
+        return self.degree + self.heuristic
 
 def is_wall(maze, x, y):
     if(maze[x][y] == "#"):
@@ -65,7 +78,6 @@ def possible_moves(node, maze_size, maze):
 
     current_position = node.moves
     end_position = find_end(maze_size, maze)
-    #print(current_position)
 
     for direction in directions:
         #gives adjacent moves
@@ -87,7 +99,6 @@ def possible_moves(node, maze_size, maze):
         
     return possible_nodes
 
-
 def a_star(maze_size, maze):
     end_position = find_end(maze_size, maze)
 
@@ -95,17 +106,18 @@ def a_star(maze_size, maze):
     frontier = list()
 
     initial_node = Node(None, find_start(maze_size, maze))
-    #print(initial_node.moves)
     frontier.append(initial_node)
-    loop = 0
+
     while len(frontier) > 0:
-        loop += 1  #nvm counter lang 
+
         current_node = frontier[0]
 
         frontier.remove(current_node)
         explored.insert(0, current_node)
 
         if current_node.moves == end_position:
+            current_node.path += [current_node.moves]
+            # print(current_node.path) # path checker (MUST be optimal)
             return current_node
 
         possible_nodes = possible_moves(current_node, maze_size, maze)
@@ -116,21 +128,41 @@ def a_star(maze_size, maze):
                 insertion_index = len(frontier)
                     
                 for index, node in enumerate(frontier):
-                    
                     if possible_node.function < node.function:
                         insertion_index = index
                         break
 
                 frontier.insert(insertion_index, possible_node)
-        #print(explored[0].moves)   #checker only
+        #print(explored[0].moves)    #uncomment for explored path coordinates
+
+
+def get_maze_size():
+    return maze_size
+
+def get_maze():
+    return maze
+
 
 maze = []
 
-#change the path:
-with open(r"D:\Codes\Codes_Python\maze.txt") as maze_file:
+with open(os.path.join(sys.path[0], "maze.txt"), "r") as maze_file:
 
     maze_size = [int(i) for i in next(maze_file).split()][0]
     for i in range(maze_size):
         maze.append(list(next(maze_file))[0:maze_size])
 
     last_node = a_star(maze_size, maze)
+    #print(last_node.path) #uncomment for final path coordinates
+    
+    #final path with "z'"
+    print(last_node.path)
+    for i in last_node.path:
+        maze[i[0]][i[1]] = "Z"
+     
+    """   
+    uncomment for maze final path
+    for i in maze:
+        print(i)
+    print()
+    """
+
