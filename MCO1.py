@@ -4,8 +4,19 @@ import os
 import sys
 
 """
+Changes by Erika Feb 25
+    - added Path List to Node Class
+    - changed calculate_function operation from * to +
+    - removed distance variable (bcs cost is counted from degree variable)
+    - removed new_moves list (created path instead to track prev)
+    - corrected adjacent moves
+Changes by Jeremy Feb 25:
+    - fixed final path bug (where code won't terminate)
+Changes by MJ Feb 25:
+    - [line 110] added goal coordinates to the final path
 Changes by Gleezell Feb 25:
     - fixed path file of "maze.txt"
+
 """
 directions = [[0,1],[1,0],[0,-1],[-1,0]]
 class Node(object):
@@ -23,7 +34,7 @@ class Node(object):
         self.heuristic = 0
     
     def calculate_function(self):
-        return self.degree * self.heuristic
+        return self.degree + self.heuristic
 
 def is_wall(maze, x, y):
     if(maze[x][y] == "#"):
@@ -67,7 +78,6 @@ def possible_moves(node, maze_size, maze):
 
     current_position = node.moves
     end_position = find_end(maze_size, maze)
-    #print(current_position)
 
     for direction in directions:
         #gives adjacent moves
@@ -96,17 +106,18 @@ def a_star(maze_size, maze):
     frontier = list()
 
     initial_node = Node(None, find_start(maze_size, maze))
-    #print(initial_node.moves)
     frontier.append(initial_node)
-    loop = 0
+
     while len(frontier) > 0:
-        loop += 1  #nvm counter lang 
+
         current_node = frontier[0]
 
         frontier.remove(current_node)
         explored.insert(0, current_node)
 
         if current_node.moves == end_position:
+            current_node.path += [current_node.moves]
+            # print(current_node.path) # path checker (MUST be optimal)
             return current_node
 
         possible_nodes = possible_moves(current_node, maze_size, maze)
@@ -123,7 +134,7 @@ def a_star(maze_size, maze):
                         break
 
                 frontier.insert(insertion_index, possible_node)
-        #print(explored[0].moves)   #checker only
+    
 
 
 def get_maze_size():
