@@ -1,70 +1,103 @@
-import copy
-import math
 import os
 import sys
+import pygame
+from queue import PriorityQueue
 
-"""
-Changes by Erika Feb 25
-    - added Path List to Node Class
-    - changed calculate_function operation from * to +
-    - removed distance variable (bcs cost is counted from degree variable)
-    - removed new_moves list (created path instead to track prev)
-    - corrected adjacent moves
-Changes by Jeremy Feb 25:
-    - fixed final path bug (where code won't terminate)
-Changes by MJ Feb 25:
-    - [line 110] added goal coordinates to the final path
-Changes by Gleezell Feb 25:
-    - fixed path file of "maze.txt"
-"""
-directions = [[0,1],[1,0],[0,-1],[-1,0]]
-class Node(object):
-    def __init__(self, parent=None, moves=None, path=None):
-        self.parent = parent
-        self.moves = moves
+WIDTH = 800
+WIN = pygame.display.set_mode((WIDTH, WIDTH))
 
-        if path is None:
-            self.path = list()
-        else:
-            self.path = path
-    
-        self.function = 0
-        self.degree = 0
-        self.heuristic = 0
-    
-    def calculate_function(self):
-        return self.degree + self.heuristic
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 255, 0)
+YELLOW = (255, 255, 0)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+PURPLE = (128, 0, 128)
+ORANGE = (255, 165 ,0)
+GREY = (128, 128, 128)
+TURQUOISE = (64, 224, 208)
 
-def is_wall(maze, x, y):
-    if(maze[x][y] == "#"):
-        return True
-    return False
+class Spot:
+	def __init__(self, row, col, width, total_rows):
+		self.row = row
+		self.col = col
+		self.x = row * width
+		self.y = col * width
+		self.color = WHITE
+		self.neighbors = []
+		self.width = width
+		self.total_rows = total_rows
 
-def is_goal(maze, x, y):
-    if(maze[x][y] == "G"):
-        return True
-    return False
+	def get_pos(self):
+		return self.row, self.col
 
-def check_bounds(x, y, maze_size):
-    if(x < 0 or x >= maze_size):
-        return False
-    
-    if(y >= maze_size or y < 0):
-        return False
-    
-    return True
+	def is_closed(self):
+		return self.color == RED
+
+	def is_open(self):
+		return self.color == GREEN
+
+	def is_barrier(self):
+		return self.color == BLACK
+
+	def is_start(self):
+		return self.color == ORANGE
+
+	def is_end(self):
+		return self.color == TURQUOISE
+
+	def reset(self):
+		self.color = WHITE
+
+	def make_start(self):
+		self.color = ORANGE
+
+	def make_closed(self):
+		self.color = RED
+
+	def make_open(self):
+		self.color = GREEN
+
+	def make_wall(self):
+		self.color = BLACK
+
+	def make_end(self):
+		self.color = TURQUOISE
+
+	def make_path(self):
+		self.color = PURPLE
+
+	def draw(self, win):
+		pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
+
+	def update_neighbors(self, grid):
+		self.neighbors = []
+		if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier(): # DOWN
+			self.neighbors.append(grid[self.row + 1][self.col])
+
+		if self.row > 0 and not grid[self.row - 1][self.col].is_barrier(): # UP
+			self.neighbors.append(grid[self.row - 1][self.col])
+
+		if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier(): # RIGHT
+			self.neighbors.append(grid[self.row][self.col + 1])
+
+		if self.col > 0 and not grid[self.row][self.col - 1].is_barrier(): # LEFT
+			self.neighbors.append(grid[self.row][self.col - 1])
+
+	def __lt__(self, other):
+		return False
 
 def find_start(maze_size, maze):
     for x in range(maze_size):
         for y in range(maze_size):
             if(maze[x][y] == 'S'):
-                return [x, y]
+                return x, y
             
 def find_end(maze_size, maze):
     for x in range(maze_size):
         for y in range(maze_size):
             if(maze[x][y] == 'G'):
-                return [x, y]
+                return x, y
 
 def manhattan_distance(current_position, end_position):
     x = end_position[0] - current_position[0]
@@ -72,82 +105,117 @@ def manhattan_distance(current_position, end_position):
     
     return abs(x) + abs(y)
 
-def possible_moves(node, maze_size, maze):
-    possible_nodes = list()
+def reconstruct_path(came_from, current, draw):
+	while current in came_from:
+		current = came_from[current]
+		current.make_path()
+		draw()
 
-    current_position = node.moves
-    end_position = find_end(maze_size, maze)
+def a_star(draw, grid, start_position, end_position):
+	count = 0
+	frontier = PriorityQueue()
+	frontier.put((0, count, start_position))
+	explored = {}
+	cost = {spot: float("inf") for row in grid for spot in row}
+	cost[start_position] = 0
+	function_score = {spot: float("inf") for row in grid for spot in row}
+	function_score[start_position] = manhattan_distance(start_position.get_pos(), end_position.get_pos())
 
-    for direction in directions:
-        #gives adjacent moves
-        new_x = current_position[0] + direction[0]
-        new_y = current_position[1] + direction[1]
-        
-        #checks if adjacent move is valid. (not wall, not out of maze, and not explored)
-        if check_bounds(new_x, new_y, maze_size) and not is_wall(maze, new_x, new_y) and [new_x, new_y] not in node.path:
-            
-            #print(new_x,new_y) #tracing
-            new_node = Node(node, [new_x, new_y])
-            new_node.path = node.path + [current_position]
-            new_node.degree = node.degree + 1
-            new_node.heuristic = manhattan_distance([new_x, new_y], end_position)
+	frontier_hash = {start_position}
 
-            new_node.function = new_node.calculate_function()
+	while not frontier.empty():
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
 
-            possible_nodes.append(new_node)
-        
-    return possible_nodes
+		current = frontier.get()[2]
+		frontier_hash.remove(current)
 
-def final_path(maze, node: Node):
-    for i in node.path:
-        maze[i[0]][i[1]] = "Z"
+		if current == end_position:
+			reconstruct_path(explored, end_position, draw)
+			end_position.make_end()
+			return True
 
-def a_star(maze_size, maze):
-    end_position = find_end(maze_size, maze)
+		for neighbor in current.neighbors:
+			temp_cost = cost[current] + 1
 
-    explored = list()
-    frontier = list()
+			if temp_cost < cost[neighbor]:
+				explored[neighbor] = current
+				cost[neighbor] = temp_cost
+				function_score[neighbor] = temp_cost + manhattan_distance(neighbor.get_pos(), end_position.get_pos())
+				if neighbor not in frontier_hash:
+					count += 1
+					frontier.put((function_score[neighbor], count, neighbor))
+					frontier_hash.add(neighbor)
+					neighbor.make_open()
 
-    initial_node = Node(None, find_start(maze_size, maze))
-    frontier.append(initial_node)
+		draw()
 
-    while len(frontier) > 0:
+		if current != start_position:
+			current.make_closed()
 
-        current_node = frontier[0]
+	return False
 
-        frontier.remove(current_node)
-        explored.insert(0, current_node)
+def make_grid(maze_size, width, maze):
+	grid = []
+	gap = width // maze_size
+	for i in range(maze_size):
+		grid.append([])
+		for j in range(maze_size):
+			spot = Spot(i, j, gap, maze_size)
+			
+			if(maze[j][i] == '#'):
+				spot.make_wall()
+	
+			grid[i].append(spot)
 
-        if current_node.moves == end_position:
-            current_node.path += [current_node.moves]
-            #final_path(maze, current_node)
-            # print(current_node.path) # path checker (MUST be optimal)
-            return "MAZE SOLVED!"
+	return grid
 
-        possible_nodes = possible_moves(current_node, maze_size, maze)
-        
-        #if there is at least 1 possible node
-        if possible_nodes:
-            for possible_node in possible_nodes:
-                insertion_index = len(frontier)
-                    
-                for index, node in enumerate(frontier):
-                    if possible_node.function < node.function:
-                        insertion_index = index
-                        break
+def draw_grid(win, maze_size, width):
+	gap = width // maze_size
+	for i in range(maze_size):
+		pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
+		for j in range(maze_size):
+			pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
-                frontier.insert(insertion_index, possible_node)
-        #print(explored[0].moves)    #uncomment for explored path coordinates
-    if current_node.path[-1] != end_position:
-        return "MAZE UNSOLVABLE!"
+def draw(win, grid, maze_size, width):
+	win.fill(WHITE)
 
+	for row in grid:
+		for spot in row:
+			spot.draw(win)
 
-def get_maze_size():
-    return maze_size
+	draw_grid(win, maze_size, width)
+	pygame.display.update()
+	
+def main(win, width, maze_size, maze):
 
-def get_maze():
-    return maze
+	grid = make_grid(maze_size, width, maze)
+	
+	temp = find_start(maze_size, maze)
+	start = grid[temp[1]][temp[0]]
+	start.make_start()
+	
+	temp = find_end(maze_size, maze)
+	end = grid[temp[1]][temp[0]]
+	end.make_end()
+	
+	run = True
+	while run:
+		draw(win, grid, maze_size, width)
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				run = False
+				
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_SPACE and start and end:
+					for row in grid:
+						for spot in row:
+							spot.update_neighbors(grid)
+					
+					a_star(lambda: draw(win, grid, maze_size, width), grid, start, end)
 
+	pygame.quit()
 
 maze = []
 
@@ -157,11 +225,4 @@ with open(os.path.join(sys.path[0], "maze.txt"), "r") as maze_file:
     for i in range(maze_size):
         maze.append(list(next(maze_file))[0:maze_size])
 
-    result = a_star(maze_size, maze)
-    print(result)
-     
-       
-    #uncomment for maze final path
-    for i in maze:
-        print(i)
-    print()
+    main(WIN, WIDTH, maze_size, maze)
