@@ -1,6 +1,7 @@
 import os
 import sys
 import pygame
+import time
 from queue import PriorityQueue
 
 RED = (255, 0, 0)
@@ -12,6 +13,42 @@ PURPLE = (128, 0, 128)
 ORANGE = (255, 165 ,0)
 GREY = (128, 128, 128)
 
+pygame.init()
+# main fonts for gui
+gui_font = pygame.font.Font(None, 50)
+text_font = pygame.font.Font(None, 30)
+
+class Button:
+	def __init__(self, text, width, height, pos):
+		# Action Attributes
+		self.pressed = False
+		
+		#top rectangle
+		self.top_rect = pygame.Rect(pos,(width, height))
+		self.top_color = '#3179FF'
+		
+        #Button Text
+		self.text_surf = gui_font.render(text, True, '#FFFFFF')
+		self.text_rect = self.text_surf.get_rect(center = self.top_rect.center)
+	
+	def draw(self, screen):
+		pygame.draw.rect(screen, self.top_color, self.top_rect, border_radius = 15)
+		screen.blit(self.text_surf, self.text_rect)
+		self.click()
+	
+	def click(self):
+		mouse_pos = pygame.mouse.get_pos()
+		if self.top_rect.collidepoint(mouse_pos):
+			self.top_color = '#2CDE3D'
+			if pygame.mouse.get_pressed()[0]:
+				self.pressed = True
+			else:
+				if self.pressed == True:
+					self.pressed = False
+		else:
+			self.top_color = '#3179FF'
+				
+		
 class Cell:
 	def __init__(self, row, col, width, total_rows):
 		self.row = row
@@ -119,7 +156,7 @@ def a_star(draw, grid, start_position, end_position):
 		if current == end_position:
 			show_optimal(explored, end_position, draw)
 			end_position.make_end()
-			return True
+			return True, explored
 
 		for neighbor in current.neighbors:
 			temp_cost = cost[current] + 1
@@ -139,7 +176,7 @@ def a_star(draw, grid, start_position, end_position):
 		if current != start_position:
 			current.make_explored()
 
-	return False
+	return False, explored
 
 # Initialize the grid cells
 def make_grid(maze_size, width, maze):
@@ -171,7 +208,6 @@ def draw_grid(window, maze_size, width):
 
 # Draws the whole grid in window
 def draw(window, grid, maze_size, width):
-	window.fill(WHITE)
 
 	for row in grid:
 		for cell in row:
@@ -179,10 +215,19 @@ def draw(window, grid, maze_size, width):
 
 	draw_grid(window, maze_size, width)
 	pygame.display.update()
-	
+
+def show_res(result, states, screen):
+	if result == True:
+	    visit = len(states)
+	    state = Button('States Visited: ' + str(visit), 350, 50,(320, 725))
+	    state.draw(screen)
+	elif result == False:
+		impossible = Button('IMPOSSIBLE MAZE!', 350, 50,(320, 725))
+		impossible.draw(screen)
+	#pygame.display.update()
 # Main function
 def main(window, width, maze_size, maze):
-
+    
 	grid = make_grid(maze_size, width, maze)
 	
 	temp = find_start(maze_size, maze)
@@ -192,20 +237,25 @@ def main(window, width, maze_size, maze):
 	end = grid[temp[1]][temp[0]]
 	
 	run = True
+	
+	window.fill(WHITE)
+	
+	heuristic_but = Button('A Star Algorithm', 300, 60,(10, 720)) 
 	while run:
+		heuristic_but.draw(window)
 		draw(window, grid, maze_size, width)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				run = False
-
-			if event.type == pygame.KEYDOWN:
-				# Starts search when SPACE is pressed
-				if event.key == pygame.K_SPACE and start and end:
-					for row in grid:
-						for cell in row:
-							cell.update_neighbors(grid)
-					
-					a_star(lambda: draw(window, grid, maze_size, width), grid, start, end)
+			
+			if heuristic_but.pressed == True and start and end:
+				for row in grid:
+					for cell in row:
+						cell.update_neighbors(grid)
+				
+				res,states = a_star(lambda: draw(window, grid, maze_size, width), grid, start, end)
+				show_res(res, states, window)
+				
 
 	pygame.quit()
 
@@ -218,7 +268,8 @@ with open(os.path.join(sys.path[0], "maze.txt"), "r") as maze_file:
     for i in range(maze_size):
         maze.append(list(next(maze_file))[0:maze_size])
 
-WIDTH = 750
-WINDOW = pygame.display.set_mode((WIDTH, WIDTH))
+WIDTH = 700
+LENGTH = 800
+WINDOW = pygame.display.set_mode((WIDTH, LENGTH))
     
 main(WINDOW, WIDTH, maze_size, maze)
