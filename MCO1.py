@@ -132,6 +132,17 @@ def show_optimal(explored, current, draw):
 		current.make_path()
 		draw()
 
+#delay dependent on the size of the maze
+def delay(size):
+	if size < 5:
+		pygame.time.delay(1000)
+	elif size < 15:
+		pygame.time.delay(250)
+	elif size < 33:
+		pygame.time.delay(100)
+	else:
+		pygame.time.delay(25)
+
 # A* algorithm with manhattan distance heuristic
 def a_star(draw, grid, start_position, end_position):
 	count = 0
@@ -172,7 +183,8 @@ def a_star(draw, grid, start_position, end_position):
 					neighbor.make_open()
 
 		draw()
-
+		#delay for animation
+		delay(len(grid))
 		if current != start_position:
 			current.make_explored()
 
@@ -224,7 +236,7 @@ def show_res(result, states, screen):
 	elif result == False:
 		impossible = Button('IMPOSSIBLE MAZE!', 350, 50,(320, 725))
 		impossible.draw(screen)
-	#pygame.display.update()
+
 # Main function
 def main(window, width, maze_size, maze):
     
@@ -237,6 +249,7 @@ def main(window, width, maze_size, maze):
 	end = grid[temp[1]][temp[0]]
 	
 	run = True
+	run_ctr = 0
 	
 	window.fill(WHITE)
 	
@@ -248,7 +261,8 @@ def main(window, width, maze_size, maze):
 			if event.type == pygame.QUIT:
 				run = False
 			
-			if heuristic_but.pressed == True and start and end:
+			if heuristic_but.pressed == True and start and end and run_ctr == 0:
+				run_ctr += 1
 				for row in grid:
 					for cell in row:
 						cell.update_neighbors(grid)
