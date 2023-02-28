@@ -193,7 +193,7 @@ def a_star(draw, grid, start_position, end_position):
 # Initialize the grid cells
 def make_grid(maze_size, width, maze):
 	grid = []
-	gap = width // maze_size
+	gap = width / maze_size
 	for i in range(maze_size):
 		grid.append([])
 		for j in range(maze_size):
@@ -212,7 +212,7 @@ def make_grid(maze_size, width, maze):
 
 # Draws the grid lines
 def draw_grid(window, maze_size, width):
-	gap = width // maze_size
+	gap = width / maze_size
 	for i in range(maze_size):
 		pygame.draw.line(window, GREY, (0, i * gap), (width, i * gap))
 		for j in range(maze_size):
