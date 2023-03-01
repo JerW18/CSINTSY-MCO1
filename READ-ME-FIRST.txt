@@ -1,0 +1,31 @@
+PROGRAM BY MCO GRP 1 - S12
+MEMBERS:
+ALEJO, GENE CEDRIC DELA CRUZ
+CABUNGCAL, MARY JOSELLE MERCADO
+CULALA, MARY ERIKA LUZ
+UY, GLEEZELL VINA ARCAS
+WANG, JEREMY CERWIN CAI
+
+
+Things to note BEFORE RUNNING the MCO1.exe:
+1. Make sure that maze.txt is INSIDE the SAME folder where the MCO1.exe file is.
+2. Double-click .exe file to run.
+3. Click "A Star" Button to run the pathfinding in the maze program.
+4. To re-run the program, simply close and run it again.
+5. If you want to make new maze, simply follow this text format:
+"""
+5
+....G
+.#.##
+.#.#S
+.#...
+.#...
+"""
+
+First Num - number of row and column of the maze
+'.' - open path
+'#' - walls
+'S' - Starting Point
+'G' - Goal Point
+
+Thank you for using our program !!!
