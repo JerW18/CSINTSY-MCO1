@@ -11,7 +11,6 @@ WANG, JEREMY CERWIN CAI
 import os
 import sys
 import pygame
-import time
 from queue import PriorityQueue
 
 RED = (255, 0, 0)
@@ -240,9 +239,9 @@ def draw(window, grid, maze_size, width):
 
 def show_res(result, states, screen):
 	if result == True:
-	    visit = len(states)
-	    state = Button('States Visited: ' + str(visit), 350, 50,(320, 725))
-	    state.draw(screen)
+		visit = len(states)
+		state = Button('States Visited: ' + str(visit), 350, 50,(320, 725))
+		state.draw(screen)
 	elif result == False:
 		impossible = Button('IMPOSSIBLE MAZE!', 350, 50,(320, 725))
 		impossible.draw(screen)
