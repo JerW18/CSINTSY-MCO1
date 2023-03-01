@@ -285,6 +285,7 @@ def main(window, width, maze_size, maze):
 maze = []
 
 # File opening
+# with open("maze.txt", "r") as maze_file: #uncomment to make it to exe file and make sure maze.txt is in the same folder of .exe
 with open(os.path.join(sys.path[0], "maze.txt"), "r") as maze_file:
 
     maze_size = [int(i) for i in next(maze_file).split()][0]
